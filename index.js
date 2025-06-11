@@ -22,14 +22,14 @@ const fs = require("fs");
     }
 
     const eslint = new ESLint({
-      cwd, // critical to locate .eslintrc.json
+      cwd,
     });
 
     console.log('eslint',eslint);
-    const results = await eslint.lintFiles(["."]);
-    
-    console.log(results)
+    const results = await eslint.lintFiles(["src/**/*.{js,ts,tsx,jsx}"]);
 
+    console.log(results)
+    
     const formatter = await eslint.loadFormatter("stylish");
     const output = formatter.format(results);
 
@@ -57,6 +57,9 @@ const fs = require("fs");
 
     console.log("✅ ESLint issues posted to pull request.");
   } catch (error) {
+    console.error("❌ ESLint failed:");
+    console.error(err.message);
+    console.error(err.stack);
     core.setFailed(`❌ Action failed: ${error.message}`);
   }
 })();
