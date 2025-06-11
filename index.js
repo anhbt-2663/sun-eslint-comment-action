@@ -25,9 +25,11 @@ const fs = require("fs");
       cwd, // critical to locate .eslintrc.json
     });
 
-    console.log(eslint);
+    console.log('eslint',eslint);
     const results = await eslint.lintFiles(["src/**/*.{js,ts,tsx,jsx}"]);
 
+    console.log(results)
+    
     const formatter = await eslint.loadFormatter("stylish");
     const output = formatter.format(results);
 
