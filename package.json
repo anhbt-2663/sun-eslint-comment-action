@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack"
   },
   "author": "",
   "license": "ISC",
@@ -12,5 +12,6 @@
     "@actions/core": "^1.11.1",
     "@actions/github": "^6.0.1",
     "eslint": "^9.28.0"
-  }
+  },
+  "devDependencies": {}
 }
