@@ -1,0 +1,20 @@
+name: "Sun Eslint PR Comment"
+description: "Create or update comment on a pull request"
+inputs:
+  github-token:
+    description: "GitHub token"
+    required: true
+  message:
+    description: "The message to post"
+    required: true
+  sticky-identifier:
+    description: "Unique key to find/update old comment"
+    required: true
+
+runs:
+  using: "node16"
+  main: "index.js"
+
+branding:
+  icon: "message-square"
+  color: "blue"
