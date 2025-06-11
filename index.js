@@ -26,10 +26,10 @@ const fs = require("fs");
     });
 
     console.log('eslint',eslint);
-    const results = await eslint.lintFiles(["src/**/*.{js,ts,tsx,jsx}"]);
-
-    console.log(results)
+    const results = await eslint.lintFiles(["."]);
     
+    console.log(results)
+
     const formatter = await eslint.loadFormatter("stylish");
     const output = formatter.format(results);
 
