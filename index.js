@@ -13,8 +13,9 @@ const fs = require("fs");
     const cwd = process.env.GITHUB_WORKSPACE || process.cwd();
     console.log("✅ Using cwd for ESLint:", cwd);
 
-    const configPath = path.join(cwd, ".eslintrc.json");
-
+    let configPath = path.join(cwd, ".eslintrc.json");
+    configPath = configPath.split("?")[0];
+    
     if (!fs.existsSync(configPath)) {
       console.error("❌ ESLint config not found at:", configPath);
     } else {
