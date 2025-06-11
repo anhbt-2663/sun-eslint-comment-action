@@ -4,6 +4,21 @@ const { ESLint } = require("eslint");
 const path = require("path");
 const fs = require("fs");
 
+async function listFiles() {
+  const cwd = process.env.GITHUB_WORKSPACE || process.cwd();
+  const pattern = '**/*.{js,ts,jsx,tsx}';
+
+  // Tìm file theo pattern, ignore node_modules mặc định
+  const files = await fg(pattern, {
+    cwd,
+    ignore: ['**/node_modules/**'],
+    absolute: true
+  });
+
+  console.log('📄 Files to lint:', files);
+  return files;
+}
+
 (async function run() {
   try {
     const token = core.getInput("GITHUB_TOKEN", { required: true });
@@ -15,7 +30,7 @@ const fs = require("fs");
 
     let configPath = path.join(cwd, ".eslintrc.json");
     configPath = configPath.split("?")[0];
-    
+
     if (!fs.existsSync(configPath)) {
       console.error("❌ ESLint config not found at:", configPath);
     } else {
@@ -24,14 +39,18 @@ const fs = require("fs");
 
     const eslint = new ESLint({
       cwd,
-      overrideConfigFile: configPath
+      overrideConfigFile: configPath,
     });
 
-    console.log('eslint',eslint);
-    const results = await eslint.lintFiles(["src/**/*.{js,ts,tsx,jsx}"]);
+    console.log("eslint", eslint);
 
-    console.log(results)
+    const files = await listFiles();
+
     
+    const results = await eslint.lintFiles(files);
+
+    console.log(results);
+
     const formatter = await eslint.loadFormatter("stylish");
     const output = formatter.format(results);
 
