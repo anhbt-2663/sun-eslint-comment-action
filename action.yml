@@ -1,14 +1,9 @@
 name: "Sun Eslint PR Comment"
 description: "Create or update comment on a pull request"
 inputs:
-  github-token:
+  GITHUB_TOKEN:
     required: true
-    description: "GitHub Token to post comment"
-  debug-rule:
-    required: false
-    default: "false"
-    description: "Print ESLint rules in logs"
-
+    description: GitHub token to post comment
 runs:
   using: "node20"
   main: "dist/index.js"
