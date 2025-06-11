@@ -12,6 +12,8 @@ const fs = require("fs");
 
     const workspace = process.env.GITHUB_WORKSPACE;
     console.log("GITHUB_WORKSPACE:", workspace);
+    console.log("📂 Directory contents:");
+    console.log(fs.readdirSync(process.env.GITHUB_WORKSPACE || '.'));
 
     const eslint = new ESLint({
       cwd: workspace, // critical to locate .eslintrc.json
