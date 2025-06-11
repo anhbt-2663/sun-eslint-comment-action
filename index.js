@@ -23,6 +23,7 @@ const fs = require("fs");
 
     const eslint = new ESLint({
       cwd,
+      overrideConfigFile: configPath
     });
 
     console.log('eslint',eslint);
