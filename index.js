@@ -58,8 +58,8 @@ const fs = require("fs");
     console.log("✅ ESLint issues posted to pull request.");
   } catch (error) {
     console.error("❌ ESLint failed:");
-    console.error(err.message);
-    console.error(err.stack);
+    console.error(error.message);
+    console.error(error.stack);
     core.setFailed(`❌ Action failed: ${error.message}`);
   }
 })();
