@@ -10,15 +10,22 @@ const fs = require("fs");
     const octokit = github.getOctokit(token);
     const context = github.context;
 
-    const workspace = process.env.GITHUB_WORKSPACE;
-    console.log("GITHUB_WORKSPACE:", workspace);
-    console.log("📂 Directory contents:");
-    console.log(fs.readdirSync(process.env.GITHUB_WORKSPACE || '.'));
+    const cwd = process.env.GITHUB_WORKSPACE || process.cwd();
+    console.log("✅ Using cwd for ESLint:", cwd);
+
+    const configPath = path.join(cwd, ".eslintrc.json");
+
+    if (!fs.existsSync(configPath)) {
+      console.error("❌ ESLint config not found at:", configPath);
+    } else {
+      console.log("✅ ESLint config found at:", configPath);
+    }
 
     const eslint = new ESLint({
-      cwd: workspace, // critical to locate .eslintrc.json
+      cwd, // critical to locate .eslintrc.json
     });
 
+    console.log(eslint);
     const results = await eslint.lintFiles(["src/**/*.{js,ts,tsx,jsx}"]);
 
     const formatter = await eslint.loadFormatter("stylish");
