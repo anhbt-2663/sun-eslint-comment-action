@@ -3,6 +3,7 @@ const github = require("@actions/github");
 const { ESLint } = require("eslint");
 const path = require("path");
 const fs = require("fs");
+const fg = require('fast-glob');
 
 async function listFiles() {
   const cwd = process.env.GITHUB_WORKSPACE || process.cwd();
@@ -46,7 +47,7 @@ async function listFiles() {
 
     const files = await listFiles();
 
-    
+
     const results = await eslint.lintFiles(files);
 
     console.log(results);
