@@ -113,10 +113,16 @@ async function listFiles() {
 
     console.log(`🔍 ${filesChanged.length} file(s) changed in PR`);
 
+    const validExtensions = [".ts", ".tsx", ".js", ".jsx"];
+
     for (const file of filesChanged) {
       const filePath = file.filename;
+      const ext = path.extname(filePath);
 
-      const line = 1;
+      if (!validExtensions.includes(ext)) {
+        console.log(`⏭️ Skipping file (not ts/js): ${filePath}`);
+        continue;
+      }
 
       try {
         await octokit.rest.pulls.createReviewComment({
@@ -125,12 +131,12 @@ async function listFiles() {
           pull_number,
           commit_id,
           path: filePath,
-          line: line,
+          line: 1, // chỉ comment ở dòng 1 nếu có trong diff
           side: "RIGHT",
           body: `📄 Đã xử lý file: \`${filePath}\``,
         });
 
-        console.log(`💬 Commented on file: ${filePath}`);
+        console.log(`💬 Commented on: ${filePath}`);
       } catch (err) {
         console.warn(`⚠️ Không thể comment vào ${filePath}: ${err.message}`);
       }
