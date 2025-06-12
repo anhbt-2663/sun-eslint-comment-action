@@ -143,7 +143,7 @@ async function listFiles() {
     }
 
     if (pull_number) {
-      const commentBody = `🔧 GitHub Action processed ${updatedCount} file(s) with comment header.`;
+      const commentBody = `🔧 Comment successfully.`;
       await octokit.rest.issues.createComment({
         owner,
         repo,
