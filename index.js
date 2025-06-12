@@ -2,8 +2,8 @@ const core = require("@actions/core");
 const github = require("@actions/github");
 const { ESLint } = require("eslint");
 const path = require("path");
-const fs = require("fs");
 const fg = require("fast-glob");
+const fs = require("fs").promises;
 
 async function listFiles() {
   const cwd = process.env.GITHUB_WORKSPACE || process.cwd();
@@ -86,6 +86,7 @@ async function listFiles() {
         }
 
         const newContent = `// Processed by GitHub Action\n${content}`;
+        
         await fs.writeFile(file, newContent, "utf8");
         console.log(`✅ Updated: ${file}`);
         updatedCount++;
