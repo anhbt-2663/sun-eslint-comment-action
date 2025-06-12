@@ -3,20 +3,20 @@ const github = require("@actions/github");
 const { ESLint } = require("eslint");
 const path = require("path");
 const fs = require("fs");
-const fg = require('fast-glob');
+const fg = require("fast-glob");
 
 async function listFiles() {
   const cwd = process.env.GITHUB_WORKSPACE || process.cwd();
-  const pattern = '**/*.{js,ts,jsx,tsx}';
+  const pattern = "**/*.{js,ts,jsx,tsx}";
 
   // Tìm file theo pattern, ignore node_modules mặc định
   const files = await fg(pattern, {
     cwd,
-    ignore: ['**/node_modules/**'],
-    absolute: true
+    ignore: ["**/node_modules/**"],
+    absolute: true,
   });
 
-  console.log('📄 Files to lint:', files);
+  console.log("📄 Files to lint:", files);
   return files;
 }
 
@@ -29,53 +29,90 @@ async function listFiles() {
     const cwd = process.env.GITHUB_WORKSPACE || process.cwd();
     console.log("✅ Using cwd for ESLint:", cwd);
 
-    let configPath = path.join(cwd, ".eslintrc.json");
-    configPath = configPath.split("?")[0];
+    // todo for eslint
+    // let configPath = path.join(cwd, ".eslintrc.json");
+    // configPath = configPath.split("?")[0];
 
-    if (!fs.existsSync(configPath)) {
-      console.error("❌ ESLint config not found at:", configPath);
-    } else {
-      console.log("✅ ESLint config found at:", configPath);
-    }
+    // if (!fs.existsSync(configPath)) {
+    //   console.error("❌ ESLint config not found at:", configPath);
+    // } else {
+    //   console.log("✅ ESLint config found at:", configPath);
+    // }
 
-    const eslint = new ESLint({
-      cwd,
-      overrideConfigFile: configPath,
-    });
+    // const eslint = new ESLint({
+    //   cwd,
+    //   overrideConfigFile: configPath,
+    // });
 
-    console.log("eslint", eslint);
+    // console.log("eslint", eslint);
+
+    // const results = await eslint.lintFiles(files);
+
+    // console.log(results);
+
+    // const formatter = await eslint.loadFormatter("stylish");
+    // const output = formatter.format(results);
+
+    // if (!output.trim()) {
+    //   console.log("✅ No ESLint issues found.");
+    //   return;
+    // }
+
+    // const commentBody = [
+    //   "🚨 **ESLint found issues:**",
+    //   "```",
+    //   output.trim().slice(0, 65000), // limit GitHub comment size
+    //   "```",
+    // ].join("\n");
+
+    // await octokit.rest.issues.createComment({
+    //   owner,
+    //   repo,
+    //   issue_number: pull_number,
+    //   body: commentBody,
+    // });
 
     const files = await listFiles();
+    let updatedCount = 0;
 
+    for (const file of files) {
+      try {
+        const content = await fs.readFile(file, "utf8");
 
-    const results = await eslint.lintFiles(files);
+        // Nếu đã có comment thì bỏ qua
+        if (content.startsWith("// Processed by GitHub Action")) {
+          console.log(`ℹ️ Skipped ${file}`);
+          continue;
+        }
 
-    console.log(results);
-
-    const formatter = await eslint.loadFormatter("stylish");
-    const output = formatter.format(results);
-
-    if (!output.trim()) {
-      console.log("✅ No ESLint issues found.");
-      return;
+        const newContent = `// Processed by GitHub Action\n${content}`;
+        await fs.writeFile(file, newContent, "utf8");
+        console.log(`✅ Updated: ${file}`);
+        updatedCount++;
+      } catch (err) {
+        console.error(`❌ Failed to update ${file}:`, err.message);
+      }
     }
 
-    const commentBody = [
-      "🚨 **ESLint found issues:**",
-      "```",
-      output.trim().slice(0, 65000), // limit GitHub comment size
-      "```",
-    ].join("\n");
+    if (updatedCount === 0) {
+      console.log("✅ No files needed updating.");
+    } else {
+      console.log(`✅ ${updatedCount} files updated with comment.`);
+    }
 
     const { owner, repo } = context.repo;
     const pull_number = context.payload.pull_request.number;
 
-    await octokit.rest.issues.createComment({
-      owner,
-      repo,
-      issue_number: pull_number,
-      body: commentBody,
-    });
+    if (pull_number) {
+      const commentBody = `🔧 GitHub Action processed ${updatedCount} file(s) with comment header.`;
+      await octokit.rest.issues.createComment({
+        owner,
+        repo,
+        issue_number: pull_number,
+        body: commentBody,
+      });
+      console.log("💬 Comment posted to PR.");
+    }
 
     console.log("✅ ESLint issues posted to pull request.");
   } catch (error) {
