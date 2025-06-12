@@ -116,8 +116,7 @@ async function listFiles() {
     for (const file of filesChanged) {
       const filePath = file.filename;
 
-      // Chỉ comment nếu có dòng bị thay đổi (diff)
-      const line = 1; // hoặc tìm từ file.patch nếu cần
+      const line = 1;
 
       try {
         await octokit.rest.pulls.createReviewComment({
@@ -136,7 +135,7 @@ async function listFiles() {
         console.warn(`⚠️ Không thể comment vào ${filePath}: ${err.message}`);
       }
     }
-    
+
     if (pull_number) {
       const commentBody = `🔧 GitHub Action processed ${updatedCount} file(s) with comment header.`;
       await octokit.rest.issues.createComment({
