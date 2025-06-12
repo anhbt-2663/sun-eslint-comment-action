@@ -26,8 +26,8 @@ async function listFiles() {
     const octokit = github.getOctokit(token);
     const context = github.context;
 
-    const cwd = process.env.GITHUB_WORKSPACE || process.cwd();
-    console.log("✅ Using cwd for ESLint:", cwd);
+    // const cwd = process.env.GITHUB_WORKSPACE || process.cwd();
+    // console.log("✅ Using cwd for ESLint:", cwd);
 
     // todo for eslint
     // let configPath = path.join(cwd, ".eslintrc.json");
@@ -72,38 +72,71 @@ async function listFiles() {
     //   body: commentBody,
     // });
 
-    const files = await listFiles();
-    let updatedCount = 0;
+    // const files = await listFiles();
+    // let updatedCount = 0;
 
-    for (const file of files) {
-      try {
-        const content = await fs.readFile(file, "utf8");
+    // for (const file of files) {
+    //   try {
+    //     const content = await fs.readFile(file, "utf8");
 
-        // Nếu đã có comment thì bỏ qua
-        if (content.startsWith("// Processed by GitHub Action")) {
-          console.log(`ℹ️ Skipped ${file}`);
-          continue;
-        }
+    //     // Nếu đã có comment thì bỏ qua
+    //     if (content.startsWith("// Processed by GitHub Action")) {
+    //       console.log(`ℹ️ Skipped ${file}`);
+    //       continue;
+    //     }
 
-        const newContent = `// Processed by GitHub Action\n${content}`;
+    //     const newContent = `// Processed by GitHub Action\n${content}`;
         
-        await fs.writeFile(file, newContent, "utf8");
-        console.log(`✅ Updated: ${file}`);
-        updatedCount++;
-      } catch (err) {
-        console.error(`❌ Failed to update ${file}:`, err.message);
-      }
-    }
+    //     await fs.writeFile(file, newContent, "utf8");
+    //     console.log(`✅ Updated: ${file}`);
+    //     updatedCount++;
+    //   } catch (err) {
+    //     console.error(`❌ Failed to update ${file}:`, err.message);
+    //   }
+    // }
 
-    if (updatedCount === 0) {
-      console.log("✅ No files needed updating.");
-    } else {
-      console.log(`✅ ${updatedCount} files updated with comment.`);
-    }
+    // if (updatedCount === 0) {
+    //   console.log("✅ No files needed updating.");
+    // } else {
+    //   console.log(`✅ ${updatedCount} files updated with comment.`);
+    // }
 
     const { owner, repo } = context.repo;
     const pull_number = context.payload.pull_request.number;
+    const commit_id = context.payload.pull_request.head.sha;
 
+    const { data: filesChanged } = await octokit.rest.pulls.listFiles({
+      owner,
+      repo,
+      pull_number,
+    });
+
+    console.log(`🔍 ${filesChanged.length} file(s) changed in PR`);
+
+    for (const file of filesChanged) {
+      const filePath = file.filename;
+
+      // Chỉ comment nếu có dòng bị thay đổi (diff)
+      const line = 1; // hoặc tìm từ file.patch nếu cần
+
+      try {
+        await octokit.rest.pulls.createReviewComment({
+          owner,
+          repo,
+          pull_number,
+          commit_id,
+          path: filePath,
+          line: line,
+          side: "RIGHT",
+          body: `📄 Đã xử lý file: \`${filePath}\``,
+        });
+
+        console.log(`💬 Commented on file: ${filePath}`);
+      } catch (err) {
+        console.warn(`⚠️ Không thể comment vào ${filePath}: ${err.message}`);
+      }
+    }
+    
     if (pull_number) {
       const commentBody = `🔧 GitHub Action processed ${updatedCount} file(s) with comment header.`;
       await octokit.rest.issues.createComment({
